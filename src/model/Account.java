@@ -1,9 +1,15 @@
+
 package model;
+
 import model.annotation.Id;
 import model.annotation.Positive;
+import exception.BankException;
+import exception.InsufficientFundsException;
+import exception.InvalidAmountException;
 import java.util.Objects;
 
 public abstract class Account implements Transactable, InterestBearing {
+
     @Id
     private final String accountNumber;
 
@@ -11,8 +17,8 @@ public abstract class Account implements Transactable, InterestBearing {
 
     @Positive
     protected long balance;
-    private boolean active;
 
+    private boolean active;
     private static int accountCounter = 0;
 
     private static String generateAccountNumber() {
@@ -31,18 +37,59 @@ public abstract class Account implements Transactable, InterestBearing {
         this(ownerName, 0);
     }
 
-    public void deposit(long amount) {
-        if (amount > 0 && active) {
-            balance += amount;
+    public void deposit(long amount) throws InvalidAmountException {
+        if (amount <= 0) {
+            throw new InvalidAmountException(
+                    "Deposit amount must be positive");
         }
+
+        if (!active) {
+            throw new InvalidAmountException("Account is inactive");
+        }
+
+        balance += amount;
     }
 
-    public boolean withdraw(long amount) {
-        if (amount <= 0 || !active || !canWithdraw(amount)) {
-            return false;
+
+    public void withdraw(long amount)
+            throws InsufficientFundsException, InvalidAmountException {
+
+        if (amount <= 0) {
+            throw new InvalidAmountException(
+                    "Withdrawal amount must be positive");
         }
+
+        if (!active) {
+            throw new InvalidAmountException("Account is inactive");
+        }
+
+        if (amount > balance) {
+            throw new InsufficientFundsException(amount - balance);
+        }
+
+        if (!canWithdraw(amount)) {
+            throw new InvalidAmountException(
+                    "Withdrawal is not allowed");
+        }
+
         balance -= amount;
-        return true;
+    }
+
+
+    public void transfer(Account to, long amount) throws BankException {
+        try {
+            if (to == null) {
+                throw new BankException("Destination account not found");
+            }
+
+            withdraw(amount);
+            to.deposit(amount);
+
+        } catch (BankException e) {
+            throw e;
+        } finally {
+            System.out.println("Transfer operation completed.");
+        }
     }
 
     public abstract double interestRate();
@@ -74,6 +121,7 @@ public abstract class Account implements Transactable, InterestBearing {
     public boolean equals(Object obj) {
         if (this == obj) return true;
         if (!(obj instanceof Account)) return false;
+
         Account other = (Account) obj;
         return accountNumber.equals(other.accountNumber);
     }

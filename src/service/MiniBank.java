@@ -1,7 +1,12 @@
 
 package service;
+
 import util.AnnotationValidator;
+import exception.BankException;
+import exception.InsufficientFundsException;
+import exception.InvalidAmountException;
 import model.*;
+
 import java.util.Scanner;
 
 record BankInfo(String name, String branch) {
@@ -12,6 +17,7 @@ enum MenuOption {
 }
 
 public class MiniBank {
+
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
 
@@ -25,11 +31,35 @@ public class MiniBank {
                 new FixedDepositAccount("Neha", 10000)
         };
 
-        accounts[0].deposit(2000);
-        accounts[0].withdraw(3000);
-        boolean result = accounts[0].withdraw(10000);
+        // Practical 8 - Exception Handling
+        System.out.println("\nPractical 8 - Exception Handling");
 
+        try {
+            accounts[0].deposit(2000);
+            accounts[0].withdraw(3000);
+            System.out.println("Deposit and withdrawal successful.");
+        } catch (InsufficientFundsException e) {
+            System.out.println("Withdrawal failed: short by "
+                    + e.getShortfall());
+        } catch (InvalidAmountException e) {
+            System.out.println("Transaction failed: " + e.getMessage());
+        } finally {
+            System.out.println("Transaction attempt completed.");
+        }
+
+        try {
+            accounts[0].withdraw(10000);
+            System.out.println("Withdrawal successful.");
+        } catch (InsufficientFundsException e) {
+            System.out.println("Withdrawal failed: short by "
+                    + e.getShortfall());
+        } catch (InvalidAmountException e) {
+            System.out.println("Withdrawal failed: " + e.getMessage());
+        }
+
+        // Practical 2 - Account Details
         System.out.println("\nPractical 2 - Account Details");
+
         for (Account account : accounts) {
             System.out.println("Account: " + account.getAccountNumber());
             System.out.println("Owner: " + account.getOwnerName());
@@ -37,18 +67,21 @@ public class MiniBank {
             System.out.println();
         }
 
-        System.out.println("Withdrawal of 10000 successful: " + result);
-
+        // Practical 3 - Object Methods
         System.out.println("\nPractical 3 - Object Methods");
+
         for (Account account : accounts) {
             System.out.println(account);
         }
 
         Account anotherAccount = accounts[0];
+
         System.out.println("Two accounts equal: "
                 + accounts[0].equals(anotherAccount));
 
+        // Practical 5 - Inheritance and Polymorphism
         System.out.println("\nPractical 5 - Inheritance and Polymorphism");
+
         for (Account account : accounts) {
             System.out.println(account.getOwnerName()
                     + " interest rate: " + account.interestRate());
@@ -59,6 +92,7 @@ public class MiniBank {
         }
 
         Object obj = accounts[0];
+
         System.out.println("Object is an Account: "
                 + (obj instanceof Account));
 
@@ -98,6 +132,7 @@ public class MiniBank {
         System.out.println("Yearly interest: "
                 + accounts[0].yearlyInterest());
 
+        // Practical 7 - Annotations and Reflection
         System.out.println("\nPractical 7 - Annotations and Reflection");
 
         SavingsAccount invalidAccount =
@@ -119,7 +154,19 @@ public class MiniBank {
             System.out.println("Validation failed: " + e.getMessage());
         }
 
+        // Practical 8 - Try-with-resources
+        System.out.println("\nTry-with-resources demonstration:");
+
+        try (MiniBankResource resource = new MiniBankResource()) {
+            System.out.println("Using bank resource.");
+            throw new IllegalStateException("Demo exception");
+        } catch (IllegalStateException e) {
+            System.out.println("Caught: " + e.getMessage());
+        }
+
+        // Main Menu
         int choice;
+
         do {
             System.out.println("\n1. Open Account");
             System.out.println("2. Deposit");
@@ -164,4 +211,12 @@ public class MiniBank {
 
         sc.close();
     }
+
+    static class MiniBankResource implements AutoCloseable {
+        @Override
+        public void close() {
+            System.out.println("Resource closed.");
+        }
+    }
+
 }
