@@ -2,11 +2,12 @@
 package service;
 
 import util.AnnotationValidator;
-import exception.BankException;
 import exception.InsufficientFundsException;
 import exception.InvalidAmountException;
 import model.*;
 
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Scanner;
 
 record BankInfo(String name, String branch) {
@@ -38,6 +39,8 @@ public class MiniBank {
             accounts[0].deposit(2000);
             accounts[0].withdraw(3000);
             System.out.println("Deposit and withdrawal successful.");
+            logTransaction("Riya deposited 2000");
+            logTransaction("Riya withdrew 3000");
         } catch (InsufficientFundsException e) {
             System.out.println("Withdrawal failed: short by "
                     + e.getShortfall());
@@ -164,6 +167,32 @@ public class MiniBank {
             System.out.println("Caught: " + e.getMessage());
         }
 
+        // Practical 11 - Persistence and Reporting
+        System.out.println("\nPractical 11 - Persistence and Reporting");
+
+        Path dataFile = Path.of("data", "accounts.dat");
+        Path logsFolder = Path.of("logs");
+        Path reportFile = Path.of("reports", "bank-report.txt");
+
+        try {
+            StatePersister.save(accounts, dataFile);
+            System.out.println("Accounts saved successfully.");
+
+            Account[] loadedAccounts = StatePersister.load(dataFile);
+            System.out.println("Accounts loaded successfully:");
+
+            for (Account account : loadedAccounts) {
+                System.out.println(account);
+            }
+
+            ReportGenerator.generate(logsFolder, reportFile);
+            System.out.println("Report generated at: " + reportFile);
+
+        } catch (IOException | ClassNotFoundException e) {
+            System.out.println("Persistence/report error: "
+                    + e.getMessage());
+        }
+
         // Main Menu
         int choice;
 
@@ -212,11 +241,20 @@ public class MiniBank {
         sc.close();
     }
 
+    private static void logTransaction(String message) {
+        try {
+            TransactionLog.append(
+                    Path.of("logs", "transactions.txt"), message);
+        } catch (IOException e) {
+            System.out.println("Could not write transaction log: "
+                    + e.getMessage());
+        }
+    }
+
     static class MiniBankResource implements AutoCloseable {
         @Override
         public void close() {
             System.out.println("Resource closed.");
         }
     }
-
 }

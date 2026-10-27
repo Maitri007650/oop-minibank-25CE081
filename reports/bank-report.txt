@@ -1,0 +1,15 @@
+MiniBank Transaction Report
+===========================
+
+File: transactions.txt
+Size: 82 bytes
+Riya deposited 2000
+Riya withdrew 3000
+Riya deposited 2000
+Riya withdrew 3000
+
+Summary
+-------
+Total log lines: 4
+Total deposits: 4000
+Total withdrawals: 6000
