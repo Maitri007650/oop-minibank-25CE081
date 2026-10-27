@@ -17,10 +17,11 @@ public class MiniBank {
         System.out.println("Branch: " + bank.branch());
 
         Account[] accounts = {
-                new Account("Riya", 5000),
-                new Account("Amit", 3000),
-                new Account("Neha")
+                new SavingsAccount("Riya", 5000, 1000),
+                new CurrentAccount("Amit", 3000, 2000),
+                new FixedDepositAccount("Neha", 10000)
         };
+
 
         accounts[0].deposit(2000);
         accounts[0].withdraw(3000);
@@ -43,10 +44,21 @@ public class MiniBank {
             System.out.println(account);
         }
 
-        Account anotherAccount = new Account(
-                accounts[0].getAccountNumber(), "Riya", 4000);
+        Account anotherAccount = accounts[0];
         System.out.println("Two accounts equal: "
                 + accounts[0].equals(anotherAccount));
+
+
+        System.out.println("\nPractical 5 - Inheritance and Polymorphism");
+
+        for (Account account : accounts) {
+            System.out.println(account.getOwnerName()
+                    + " interest rate: " + account.interestRate());
+
+            if (account instanceof SavingsAccount) {
+                System.out.println("This is a Savings Account");
+            }
+        }
 
         Object obj = accounts[0];
         System.out.println("Object is an Account: "

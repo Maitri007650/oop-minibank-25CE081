@@ -1,10 +1,9 @@
-
 import java.util.Objects;
 
-public class Account {
+public abstract class Account {
     private final String accountNumber;
     private String ownerName;
-    private long balance;
+    protected long balance;
     private boolean active;
 
     private static int accountCounter = 0;
@@ -32,12 +31,16 @@ public class Account {
     }
 
     public boolean withdraw(long amount) {
-        if (amount <= 0 || amount > balance || !active) {
+        if (amount <= 0 || !active || !canWithdraw(amount)) {
             return false;
         }
         balance -= amount;
         return true;
     }
+
+    public abstract double interestRate();
+
+    public abstract boolean canWithdraw(long amount);
 
     public String getAccountNumber() {
         return accountNumber;
@@ -62,12 +65,8 @@ public class Account {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!(obj instanceof Account)) {
-            return false;
-        }
+        if (this == obj) return true;
+        if (!(obj instanceof Account)) return false;
         Account other = (Account) obj;
         return accountNumber.equals(other.accountNumber);
     }
@@ -75,11 +74,5 @@ public class Account {
     @Override
     public int hashCode() {
         return Objects.hash(accountNumber);
-    }
-    Account(String accountNumber, String ownerName, long balance) {
-        this.accountNumber = accountNumber;
-        this.ownerName = ownerName;
-        this.balance = balance;
-        this.active = true;
     }
 }
