@@ -193,6 +193,32 @@ public class MiniBank {
                     + e.getMessage());
         }
 
+
+        // Practical 12 - Collections Framework
+        System.out.println("\nPractical 12 - Collections Framework");
+
+        AccountStore store = new AccountStore();
+
+        for (Account account : accounts) {
+            store.add(account);
+        }
+
+        System.out.println("Account found: " + store.get("AC0002"));
+
+        System.out.println("Accounts sorted by balance:");
+
+        for (Account account : store.sortedByBalance()) {
+            System.out.println(account);
+        }
+
+        store.addTransaction("Riya deposited 2000");
+        store.addTransaction("Riya withdrew 3000");
+
+        System.out.println("Transaction history:");
+        for (String transaction : store.getTransactionHistory()) {
+            System.out.println(transaction);
+        }
+
         // Main Menu
         int choice;
 
