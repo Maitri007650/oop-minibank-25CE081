@@ -1,6 +1,6 @@
 
 package service;
-
+import util.AnnotationValidator;
 import model.*;
 import java.util.Scanner;
 
@@ -98,7 +98,27 @@ public class MiniBank {
         System.out.println("Yearly interest: "
                 + accounts[0].yearlyInterest());
 
-        // Main menu
+        System.out.println("\nPractical 7 - Annotations and Reflection");
+
+        SavingsAccount invalidAccount =
+                new SavingsAccount("Test", 100, 1000);
+
+        try {
+            java.lang.reflect.Field balanceField =
+                    Account.class.getDeclaredField("balance");
+
+            balanceField.setAccessible(true);
+            balanceField.setLong(invalidAccount, -100);
+
+            String[] errors = AnnotationValidator.validate(invalidAccount);
+
+            for (String error : errors) {
+                System.out.println("Validation error: " + error);
+            }
+        } catch (ReflectiveOperationException e) {
+            System.out.println("Validation failed: " + e.getMessage());
+        }
+
         int choice;
         do {
             System.out.println("\n1. Open Account");
