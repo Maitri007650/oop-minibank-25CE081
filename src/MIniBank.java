@@ -16,8 +16,27 @@ public class MiniBank {
         System.out.println("===== " + bank.name() + " =====");
         System.out.println("Branch: " + bank.branch());
 
-        int choice;
+        Account[] accounts = {
+                new Account("Riya", 5000),
+                new Account("Amit", 3000),
+                new Account("Neha")
+        };
 
+        accounts[0].deposit(2000);
+        accounts[0].withdraw(3000);
+        boolean result = accounts[0].withdraw(10000);
+
+        System.out.println("\nPractical 2 - Account Details");
+        for (Account account : accounts) {
+            System.out.println("Account: " + account.getAccountNumber());
+            System.out.println("Owner: " + account.getOwnerName());
+            System.out.println("Balance: " + account.getBalance());
+            System.out.println();
+        }
+
+        System.out.println("Withdrawal of 10000 successful: " + result);
+
+        int choice;
         do {
             System.out.println("\n1. Open Account");
             System.out.println("2. Deposit");
@@ -48,14 +67,10 @@ public class MiniBank {
             };
 
             String message = switch (option) {
-                case OPEN_ACCOUNT ->
-                        "Open Account — to be implemented in a later lab";
-                case DEPOSIT ->
-                        "Deposit — to be implemented in a later lab";
-                case WITHDRAW ->
-                        "Withdraw — to be implemented in a later lab";
-                case TRANSFER ->
-                        "Transfer — to be implemented in a later lab";
+                case OPEN_ACCOUNT -> "Open Account — later lab";
+                case DEPOSIT -> "Deposit — later lab";
+                case WITHDRAW -> "Withdraw — later lab";
+                case TRANSFER -> "Transfer — later lab";
                 case EXIT -> "Thank you for using MiniBank. Goodbye!";
             };
 
