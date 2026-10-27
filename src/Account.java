@@ -1,4 +1,6 @@
 
+import java.util.Objects;
+
 public class Account {
     private final String accountNumber;
     private String ownerName;
@@ -33,7 +35,6 @@ public class Account {
         if (amount <= 0 || amount > balance || !active) {
             return false;
         }
-
         balance -= amount;
         return true;
     }
@@ -52,5 +53,33 @@ public class Account {
 
     public boolean isActive() {
         return active;
+    }
+
+    @Override
+    public String toString() {
+        return accountNumber + " | " + ownerName + " | " + balance;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof Account)) {
+            return false;
+        }
+        Account other = (Account) obj;
+        return accountNumber.equals(other.accountNumber);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(accountNumber);
+    }
+    Account(String accountNumber, String ownerName, long balance) {
+        this.accountNumber = accountNumber;
+        this.ownerName = ownerName;
+        this.balance = balance;
+        this.active = true;
     }
 }
