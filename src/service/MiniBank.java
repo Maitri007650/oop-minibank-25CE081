@@ -2,8 +2,6 @@
 package service;
 
 import exception.BankException;
-import exception.InsufficientFundsException;
-import exception.InvalidAmountException;
 import model.*;
 
 import java.io.IOException;
@@ -18,22 +16,29 @@ record BankInfo(String name, String branch) {
 
 enum MenuOption {
     OPEN_ACCOUNT, DEPOSIT, WITHDRAW, TRANSFER,
-    VIEW_ACCOUNTS, VIEW_HISTORY, SAVE_EXIT
+    VIEW_ACCOUNTS, VIEW_HISTORY, VIEW_STATEMENT,
+    RUN_REPORT, SAVE_EXIT
 }
 
 public class MiniBank {
 
     private static final Scanner sc = new Scanner(System.in);
+
     private static final Path DATA_FILE =
             Path.of("data", "accounts.dat");
+
     private static final Path LOG_FILE =
             Path.of("logs", "transactions.txt");
+
     private static final Path REPORT_FILE =
             Path.of("reports", "bank-report.txt");
 
     private static final List<Account> accounts = new ArrayList<>();
+    private static final BankService bankService =
+            new BankService(accounts);
 
     public static void main(String[] args) {
+
         BankInfo bank = new BankInfo("MiniBank", "Main Branch");
 
         System.out.println("\n==================================");
@@ -48,6 +53,7 @@ public class MiniBank {
 
         while (running) {
             showMenu();
+
             int choice = readInt("Enter your choice: ");
 
             MenuOption option = switch (choice) {
@@ -57,12 +63,14 @@ public class MiniBank {
                 case 4 -> MenuOption.TRANSFER;
                 case 5 -> MenuOption.VIEW_ACCOUNTS;
                 case 6 -> MenuOption.VIEW_HISTORY;
-                case 7 -> MenuOption.SAVE_EXIT;
+                case 7 -> MenuOption.VIEW_STATEMENT;
+                case 8 -> MenuOption.RUN_REPORT;
+                case 9 -> MenuOption.SAVE_EXIT;
                 default -> null;
             };
 
             if (option == null) {
-                System.out.println("Invalid choice. Please select 1-7.");
+                System.out.println("Invalid choice. Please select 1-9.");
                 continue;
             }
 
@@ -73,6 +81,9 @@ public class MiniBank {
                 case TRANSFER -> transfer();
                 case VIEW_ACCOUNTS -> viewAccounts();
                 case VIEW_HISTORY -> viewHistory();
+                case VIEW_STATEMENT -> viewStatement();
+                case RUN_REPORT -> generateReport();
+
                 case SAVE_EXIT -> {
                     saveAccounts();
                     generateReport();
@@ -94,7 +105,9 @@ public class MiniBank {
         System.out.println("4. Transfer Money");
         System.out.println("5. View All Accounts");
         System.out.println("6. View Transaction History");
-        System.out.println("7. Save and Exit");
+        System.out.println("7. View Account Statement");
+        System.out.println("8. Generate Bank Report");
+        System.out.println("9. Save and Exit");
         System.out.println("-------------------------------------");
     }
 
@@ -115,48 +128,50 @@ public class MiniBank {
         System.out.println("3. Fixed Deposit Account");
 
         int type = readInt("Choose account type: ");
+
         if (type < 1 || type > 3) {
             System.out.println("Invalid account type.");
             return;
         }
 
         long openingBalance = readLong("Enter opening balance: ");
+
         if (openingBalance < 0) {
             System.out.println("Opening balance cannot be negative.");
             return;
         }
 
-        Account account;
+        try {
+            Account account = bankService.openAccount(
+                    type, name, openingBalance);
 
-        switch (type) {
-            case 1 -> account =
-                    new SavingsAccount(name, openingBalance, 1000);
-            case 2 -> account =
-                    new CurrentAccount(name, openingBalance, 2000);
-            case 3 -> account =
-                    new FixedDepositAccount(name, openingBalance);
-            default -> {
-                System.out.println("Invalid account type.");
-                return;
-            }
+            saveAccounts();
+
+            recordTransaction("Account opened: "
+                    + account.getAccountNumber()
+                    + " for " + name);
+
+            System.out.println("\nAccount opened successfully!");
+            System.out.println("Account number: "
+                    + account.getAccountNumber());
+            System.out.println("Account holder: "
+                    + account.getOwnerName());
+            System.out.println("Account type: "
+                    + accountType(account));
+            System.out.println("Opening balance: "
+                    + account.getBalance());
+
+        } catch (IllegalArgumentException e) {
+            System.out.println("Account creation failed: "
+                    + e.getMessage());
         }
-
-        accounts.add(account);
-        saveAccounts();
-        recordTransaction("Account opened: "
-                + account.getAccountNumber() + " for " + name);
-
-        System.out.println("\nAccount opened successfully!");
-        System.out.println("Account number: "
-                + account.getAccountNumber());
-        System.out.println("Account holder: " + account.getOwnerName());
-        System.out.println("Opening balance: " + account.getBalance());
     }
 
     private static void deposit() {
         System.out.println("\n--- Deposit Money ---");
 
         Account account = selectAccount();
+
         if (account == null) {
             return;
         }
@@ -164,16 +179,18 @@ public class MiniBank {
         long amount = readLong("Enter deposit amount: ");
 
         try {
-            account.deposit(amount);
-            String message = "Deposit successful. New balance: "
-                    + account.getBalance();
+            bankService.deposit(account.getAccountNumber(), amount);
 
             recordTransaction(account.getAccountNumber()
                     + " deposited " + amount);
+
             saveAccounts();
 
-            System.out.println(message);
-        } catch (InvalidAmountException e) {
+            System.out.println("Deposit successful!");
+            System.out.println("Updated balance: "
+                    + account.getBalance());
+
+        } catch (BankException e) {
             System.out.println("Deposit failed: " + e.getMessage());
         }
     }
@@ -182,6 +199,7 @@ public class MiniBank {
         System.out.println("\n--- Withdraw Money ---");
 
         Account account = selectAccount();
+
         if (account == null) {
             return;
         }
@@ -189,18 +207,18 @@ public class MiniBank {
         long amount = readLong("Enter withdrawal amount: ");
 
         try {
-            account.withdraw(amount);
+            bankService.withdraw(account.getAccountNumber(), amount);
+
             recordTransaction(account.getAccountNumber()
                     + " withdrew " + amount);
+
             saveAccounts();
 
-            System.out.println("Withdrawal successful.");
+            System.out.println("Withdrawal successful!");
             System.out.println("Remaining balance: "
                     + account.getBalance());
-        } catch (InsufficientFundsException e) {
-            System.out.println("Withdrawal failed: insufficient funds.");
-            System.out.println("Shortfall: " + e.getShortfall());
-        } catch (InvalidAmountException e) {
+
+        } catch (BankException e) {
             System.out.println("Withdrawal failed: " + e.getMessage());
         }
     }
@@ -212,6 +230,7 @@ public class MiniBank {
         String fromNumber = sc.nextLine().trim();
 
         Account from = findAccount(fromNumber);
+
         if (from == null) {
             System.out.println("Sender account not found.");
             return;
@@ -221,27 +240,34 @@ public class MiniBank {
         String toNumber = sc.nextLine().trim();
 
         Account to = findAccount(toNumber);
+
         if (to == null) {
             System.out.println("Receiver account not found.");
             return;
         }
 
         if (from == to) {
-            System.out.println("Sender and receiver must be different.");
+            System.out.println(
+                    "Sender and receiver must be different.");
             return;
         }
 
         long amount = readLong("Enter transfer amount: ");
 
         try {
-            from.transfer(to, amount);
+            bankService.transfer(fromNumber, toNumber, amount);
+
             recordTransaction(fromNumber + " transferred "
                     + amount + " to " + toNumber);
+
             saveAccounts();
 
             System.out.println("Transfer successful!");
-            System.out.println("Sender balance: " + from.getBalance());
-            System.out.println("Receiver balance: " + to.getBalance());
+            System.out.println("Sender balance: "
+                    + from.getBalance());
+            System.out.println("Receiver balance: "
+                    + to.getBalance());
+
         } catch (BankException e) {
             System.out.println("Transfer failed: " + e.getMessage());
         }
@@ -257,6 +283,7 @@ public class MiniBank {
 
         System.out.printf("%-12s %-20s %-20s %s%n",
                 "Account No.", "Holder", "Account Type", "Balance");
+
         System.out.println(
                 "---------------------------------------------------------------");
 
@@ -290,8 +317,33 @@ public class MiniBank {
             for (String line : lines) {
                 System.out.println("- " + line);
             }
+
         } catch (IOException e) {
             System.out.println("Could not read history: "
+                    + e.getMessage());
+        }
+    }
+
+    private static void viewStatement() {
+        System.out.println("\n--- Account Statement ---");
+
+        System.out.print("Enter account number: ");
+        String number = sc.nextLine().trim();
+
+        try {
+            Account account = bankService.statement(number);
+
+            System.out.println("Account number: "
+                    + account.getAccountNumber());
+            System.out.println("Account holder: "
+                    + account.getOwnerName());
+            System.out.println("Account type: "
+                    + accountType(account));
+            System.out.println("Current balance: "
+                    + account.getBalance());
+
+        } catch (BankException e) {
+            System.out.println("Could not display statement: "
                     + e.getMessage());
         }
     }
@@ -303,7 +355,8 @@ public class MiniBank {
         Account account = findAccount(number);
 
         if (account == null) {
-            System.out.println("Account not found. Check the account number.");
+            System.out.println(
+                    "Account not found. Check the account number.");
         }
 
         return account;
@@ -311,10 +364,12 @@ public class MiniBank {
 
     private static Account findAccount(String number) {
         for (Account account : accounts) {
-            if (account.getAccountNumber().equalsIgnoreCase(number)) {
+            if (account.getAccountNumber()
+                    .equalsIgnoreCase(number)) {
                 return account;
             }
         }
+
         return null;
     }
 
@@ -322,12 +377,15 @@ public class MiniBank {
         if (account instanceof SavingsAccount) {
             return "Savings";
         }
+
         if (account instanceof CurrentAccount) {
             return "Current";
         }
+
         if (account instanceof FixedDepositAccount) {
             return "Fixed Deposit";
         }
+
         return "Other";
     }
 
@@ -361,22 +419,32 @@ public class MiniBank {
         try {
             if (Files.exists(DATA_FILE)) {
                 Account[] saved = StatePersister.load(DATA_FILE);
+
                 accounts.clear();
                 accounts.addAll(List.of(saved));
+
                 Account.updateCounterFromAccounts(saved);
+
                 System.out.println("Saved accounts loaded: "
                         + accounts.size());
+
             } else {
                 accounts.add(new SavingsAccount("Riya", 5000, 1000));
                 accounts.add(new CurrentAccount("Amit", 3000, 2000));
                 accounts.add(new FixedDepositAccount("Neha", 10000));
+
                 saveAccounts();
-                System.out.println("Sample accounts created for testing.");
+
+                System.out.println(
+                        "Sample accounts created for testing.");
             }
+
         } catch (IOException | ClassNotFoundException e) {
             System.out.println("Could not load saved accounts: "
                     + e.getMessage());
+
             System.out.println("Starting with sample accounts.");
+
             accounts.clear();
             accounts.add(new SavingsAccount("Riya", 5000, 1000));
             accounts.add(new CurrentAccount("Amit", 3000, 2000));
@@ -386,7 +454,9 @@ public class MiniBank {
 
     private static void saveAccounts() {
         try {
-            StatePersister.save(accounts.toArray(new Account[0]), DATA_FILE);
+            StatePersister.save(
+                    accounts.toArray(new Account[0]), DATA_FILE);
+
         } catch (IOException e) {
             System.out.println("Could not save accounts: "
                     + e.getMessage());
@@ -396,6 +466,7 @@ public class MiniBank {
     private static void recordTransaction(String message) {
         try {
             TransactionLog.append(LOG_FILE, message);
+
         } catch (IOException e) {
             System.out.println("Could not save transaction: "
                     + e.getMessage());
@@ -404,8 +475,11 @@ public class MiniBank {
 
     private static void generateReport() {
         try {
-            ReportGenerator.generate(LOG_FILE.getParent(), REPORT_FILE);
+            ReportGenerator.generate(
+                    LOG_FILE.getParent(), REPORT_FILE);
+
             System.out.println("Report saved to " + REPORT_FILE);
+
         } catch (IOException e) {
             System.out.println("Could not generate report: "
                     + e.getMessage());

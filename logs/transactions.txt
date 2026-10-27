@@ -12,3 +12,6 @@ AC0001 deposited 500
 AC0001 withdrew 200
 AC0001 transferred 500 to AC0002
 Account opened: AC0004 for Priya Shah
+AC0001 deposited 100
+AC0001 withdrew 100
+AC0001 transferred 100 to AC0002

@@ -1,20 +1,51 @@
 # MiniBank
 
-A simple banking application developed using Java.
+A simple banking application developed using Java as part of the Object Oriented Programming with Java (OOPJ) course.
 
-## Practical 1
-- Displays bank name and branch.
-- Shows a menu using an enum and switch expressions.
-- Handles invalid menu input.
-- Repeats the menu until the user exits.
+## Features
+
+- Create bank accounts
+- Deposit and withdraw money
+- Transfer money between accounts
+- View account details and transaction history
+- Save and load account data
+- Generate bank reports
+- Demonstrate multithreading and transaction processing
+- Use Java annotations, reflection, generics, and exception handling
 
 ## Requirements
-- Java JDK 21
+
+- Java JDK 21 or later
+- Git (optional, for version control)
+
+## Project Structure
+
+The source code is organized into packages such as `model`, `service`, `util`, `exception`, and `concurrent`.
 
 ## How to Compile and Run
 
-Compile:
-javac -d out src/MiniBank.java
+Open Git Bash in the project directory.
 
-Run:
-java -cp out MiniBank
+Compile all Java source files:
+
+```bash
+javac -d out $(find src -name "*.java")
+```
+
+Run the application:
+
+```bash
+java -cp out service.MiniBank
+```
+
+## Running the JAR
+
+If `MiniBank.jar` is available and has been built with the correct main class, run:
+
+```bash
+java -jar MiniBank.jar
+```
+
+## Repository
+
+GitHub: https://github.com/Maitri007650/oop-minibank-25CE081
