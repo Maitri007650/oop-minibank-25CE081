@@ -1,6 +1,8 @@
 
 package model;
 
+import model.annotation.Id;
+
 import java.io.Serializable;
 
 public class Customer implements Cloneable, Serializable {
@@ -10,7 +12,10 @@ public class Customer implements Cloneable, Serializable {
     private String name;
     private String email;
     private String mobile;
+
+    @Id
     private final String customerId;
+
     private Address address;
 
     private static long customerCounter = 100;

@@ -219,6 +219,33 @@ public class MiniBank {
             System.out.println(transaction);
         }
 
+        // Practical 13 - Generics and Repository
+        System.out.println("\nPractical 13 - Generics and Repository");
+
+        Repository<Account> accountRepository = new Repository<>();
+        accountRepository.saveAll(accounts);
+
+        System.out.println("Account found:");
+        System.out.println(accountRepository.findById("AC0002"));
+
+        System.out.println("All accounts in repository:");
+        for (Account account : accountRepository.findAll()) {
+            System.out.println(account);
+        }
+
+        Repository<Customer> customerRepository = new Repository<>();
+        customerRepository.save(customer);
+
+        System.out.println("Customer found:");
+        System.out.println(
+                customerRepository.findById(customer.getCustomerId())
+        );
+
+        Integer[] numbers = {10, 20, 30};
+        System.out.println(
+                "Average: " + Repository.average(numbers)
+        );
+
         // Main Menu
         int choice;
 
