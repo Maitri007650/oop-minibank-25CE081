@@ -2,14 +2,24 @@ MiniBank Transaction Report
 ===========================
 
 File: transactions.txt
-Size: 82 bytes
+Size: 321 bytes
 Riya deposited 2000
 Riya withdrew 3000
 Riya deposited 2000
 Riya withdrew 3000
+Riya deposited 2000
+Riya withdrew 3000
+Riya deposited 2000
+Riya withdrew 3000
+Riya deposited 2000
+Riya withdrew 3000
+AC0001 deposited 500
+AC0001 withdrew 200
+AC0001 transferred 500 to AC0002
+Account opened: AC0004 for Priya Shah
 
 Summary
 -------
-Total log lines: 4
-Total deposits: 4000
-Total withdrawals: 6000
+Total log lines: 14
+Total deposits: 10500
+Total withdrawals: 15200

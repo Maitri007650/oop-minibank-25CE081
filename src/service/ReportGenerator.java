@@ -8,8 +8,13 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ReportGenerator {
+
+    private static final Pattern AMOUNT_PATTERN =
+            Pattern.compile("(?:deposited|withdrew)\\s+(\\d+)");
 
     public static void generate(Path logsFolder, Path reportFile)
             throws IOException {
@@ -60,10 +65,7 @@ public class ReportGenerator {
 
                             if (lowerLine.contains("deposit")) {
                                 totalDeposits += extractAmount(line);
-                            }
-
-                            if (lowerLine.contains("withdraw")
-                                    || lowerLine.contains("withdrew")) {
+                            } else if (lowerLine.contains("withdrew")) {
                                 totalWithdrawals += extractAmount(line);
                             }
 
@@ -90,15 +92,13 @@ public class ReportGenerator {
     }
 
     private static long extractAmount(String line) {
-        String[] parts = line.split("\\D+");
+        Matcher matcher = AMOUNT_PATTERN.matcher(line);
 
-        for (String part : parts) {
-            if (!part.isEmpty()) {
-                try {
-                    return Long.parseLong(part);
-                } catch (NumberFormatException e) {
-                    return 0;
-                }
+        if (matcher.find()) {
+            try {
+                return Long.parseLong(matcher.group(1));
+            } catch (NumberFormatException e) {
+                return 0;
             }
         }
 

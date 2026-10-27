@@ -32,6 +32,23 @@ public abstract class Account
         return String.format("AC%04d", accountCounter);
     }
 
+    public static void updateCounterFromAccounts(Account[] accounts) {
+        for (Account account : accounts) {
+            if (account != null) {
+                String number = account.getAccountNumber();
+
+                try {
+                    int value = Integer.parseInt(number.substring(2));
+                    if (value > accountCounter) {
+                        accountCounter = value;
+                    }
+                } catch (NumberFormatException | StringIndexOutOfBoundsException e) {
+                    // Ignore account numbers that don't match the expected format.
+                }
+            }
+        }
+    }
+
     public Account(String ownerName, long openingBalance) {
         this.accountNumber = generateAccountNumber();
         this.ownerName = ownerName;
