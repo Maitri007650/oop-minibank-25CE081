@@ -1,4 +1,7 @@
 
+package service;
+
+import model.*;
 import java.util.Scanner;
 
 record BankInfo(String name, String branch) {
@@ -22,7 +25,6 @@ public class MiniBank {
                 new FixedDepositAccount("Neha", 10000)
         };
 
-
         accounts[0].deposit(2000);
         accounts[0].withdraw(3000);
         boolean result = accounts[0].withdraw(10000);
@@ -37,9 +39,7 @@ public class MiniBank {
 
         System.out.println("Withdrawal of 10000 successful: " + result);
 
-
         System.out.println("\nPractical 3 - Object Methods");
-
         for (Account account : accounts) {
             System.out.println(account);
         }
@@ -48,9 +48,7 @@ public class MiniBank {
         System.out.println("Two accounts equal: "
                 + accounts[0].equals(anotherAccount));
 
-
         System.out.println("\nPractical 5 - Inheritance and Polymorphism");
-
         for (Account account : accounts) {
             System.out.println(account.getOwnerName()
                     + " interest rate: " + account.interestRate());
@@ -80,6 +78,27 @@ public class MiniBank {
         System.out.println("Cloned customer: "
                 + copiedCustomer.getName());
 
+        // Practical 6 - Interfaces and Lambda
+        System.out.println("\nPractical 6 - Interfaces and Lambda");
+
+        WithdrawRule rule1 = new WithdrawRule() {
+            @Override
+            public boolean allow(Account account, long amount) {
+                return account.canWithdraw(amount);
+            }
+        };
+
+        WithdrawRule rule2 =
+                (account, amount) -> account.canWithdraw(amount);
+
+        System.out.println("Anonymous rule: "
+                + rule1.allow(accounts[0], 1000));
+        System.out.println("Lambda rule: "
+                + rule2.allow(accounts[0], 1000));
+        System.out.println("Yearly interest: "
+                + accounts[0].yearlyInterest());
+
+        // Main menu
         int choice;
         do {
             System.out.println("\n1. Open Account");
@@ -90,7 +109,8 @@ public class MiniBank {
             System.out.print("Enter your choice: ");
 
             while (!sc.hasNextInt()) {
-                System.out.println("Invalid input. Enter a number from 1 to 5.");
+                System.out.println(
+                        "Invalid input. Enter a number from 1 to 5.");
                 sc.next();
                 System.out.print("Enter your choice: ");
             }
